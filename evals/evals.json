@@ -1,0 +1,51 @@
+{
+  "skill_name": "google-adk-v2-golang",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I'm building an AI agent in Go using Google's ADK. I want it to: 1) take a city name and call a custom tool to fetch the weather (mock data is fine), then 2) have a second agent summarize that weather report in a friendly tone. Wire it up as a sequential pipeline and show me how to run it with an in-memory runner. Save it as main.go.",
+      "expected_output": "A main.go using google.golang.org/adk/v2 with a functiontool-based weather tool, two llmagent agents chained via OutputKey/{placeholder}, wired into a sequentialagent pipeline, run via a runner.",
+      "files": [],
+      "expectations": [
+        "Imports use the google.golang.org/adk/v2/... path prefix (not the un-versioned google.golang.org/adk/... v1 path)",
+        "A custom weather tool is defined via functiontool.New with a typed args struct and a handler taking agent.Context (not the v1 tool.Context alias)",
+        "Two llmagent.New agents are created: one that calls the weather tool, one that summarizes in a friendly tone, connected via OutputKey and a {placeholder} in the second agent's Instruction",
+        "The two agents are wired into a sequentialagent.New pipeline (or otherwise run in a fixed sequential order)",
+        "The code runs the pipeline via a runner (either runner.New + runner.Config, or the v2 runner.NewInMemory convenience constructor) and iterates the returned events",
+        "The model is constructed via gemini.NewModel with a plausible current model id (e.g. gemini-flash-latest), not a clearly fictional or deprecated-looking id",
+        "No output claims the code was actually executed or verified"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Using ADK Go, build a refund-processing workflow with the graph-based orchestration engine: validate the refund request, check the refund policy, and if the amount is over $500, pause the whole workflow and wait for a human approver before issuing the refund. It needs to be able to survive a process restart while waiting for approval. Save the code to refund_workflow.go.",
+      "expected_output": "Go code using google.golang.org/adk/v2/workflow with distinct validate/policy-check/approval/issue nodes, conditional routing on the $500 threshold, and durable HITL (ResumeOrRequestInput / RequestInput) rather than an in-memory wait.",
+      "files": [],
+      "expectations": [
+        "Uses the google.golang.org/adk/v2/workflow graph engine package, not just sequentialagent/parallelagent/loopagent, for the branching/pause logic",
+        "Includes distinct steps/nodes for validating the request and checking refund policy before any approval or issuance step",
+        "Implements the >$500 branch using conditional/dynamic routing (e.g. a DynamicNode with RunNode, or workflow routing helpers), not a hardcoded unconditional path",
+        "Uses the durable HITL primitive (workflow.ResumeOrRequestInput and/or workflow.NewRequestInputEvent with session.RequestInput) for the human-approval pause, not just an in-memory channel/sleep/blocking wait",
+        "Demonstrates or explicitly describes a resume path needed to satisfy 'survive a process restart' (loading the session and re-invoking the graph with the human's answer), not just the initial pause",
+        "Does not conflate this graph-level pause with the separate, per-tool-call tool.WithConfirmation mechanism as if they were the same thing",
+        "The refund issuance step only runs after the approval gate for amounts over $500, not unconditionally",
+        "wf.Run (or the mechanism used to start the graph) is invoked with an agent.InvocationContext, typically by driving the *Workflow through a runner rather than calling wf.Run directly with a bare context.Context",
+        "The resume path is implemented by calling runner.Run again with a message that answers the pending interrupt (e.g. a genai.Content carrying a FunctionResponse keyed to the InterruptID), not by calling wf.Resume directly with a hand-built context.Context or agent.Context"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Here's a snippet from an existing ADK Go agent (built against an older ADK Go release) that needs to be upgraded to the current ADK Go version:\n\n```go\nimport (\n    \"google.golang.org/adk/agent\"\n    \"google.golang.org/adk/tool\"\n)\n\nfunc myTool(ctx tool.Context, args MyArgs) (MyResult, error) {\n    ctx.Actions().Escalate = true\n    return MyResult{}, nil\n}\n\ntype mockCallbackContext struct {\n    agent.CallbackContext\n}\n```\n\nWe're on Go 1.25. What exactly do we need to change to move to the current ADK Go version, and why? Write out the updated code.",
+      "expected_output": "Correctly identifies the /v2 import path change, the ToolContext/CallbackContext merge into agent.Context, the resulting mock-compilation break, and recommends agent.StrictContextMock (or lists the concrete missing methods) — with corrected code.",
+      "files": [],
+      "expectations": [
+        "States the module import path must change from google.golang.org/adk/... to google.golang.org/adk/v2/...",
+        "States that tool.Context should become agent.Context (the unified context type), not just a mechanical find-replace with no explanation",
+        "States that agent.CallbackContext no longer exists as a separate type and is merged into agent.Context, and explains the mock-compilation impact this has",
+        "Recommends or shows agent.StrictContextMock as the preferred way to fix the now-broken mockCallbackContext test double (or at minimum lists the specific new methods a hand-patched mock would need)",
+        "The rewritten code compiles conceptually against v2 (uses agent.Context correctly in the tool function signature, and updates the mock type)",
+        "Does not claim v1 is deprecated, abandoned, or no longer maintained"
+      ]
+    }
+  ]
+}
