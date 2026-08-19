@@ -1,8 +1,12 @@
 # google-adk-v2-golang
 
-A [Claude Code skill](https://docs.claude.com/en/docs/claude-code/skills) for building AI agents with Google's [Agent Development Kit for Go, v2](https://adk.dev/get-started/go/) (`google.golang.org/adk/v2`).
+An [Agent Skill](https://www.skills.sh/) for building AI agents with Google's [Agent Development Kit for Go, v2](https://adk.dev/get-started/go/) (`google.golang.org/adk/v2`).
 
-Claude Code skills are packaged instructions Claude loads on demand — this one teaches Claude how to write correct ADK Go v2 code instead of relying on (often stale or v1-only) training data. Drop this directory into a project as a skill, and Claude will pick it up automatically whenever a task involves ADK Go: defining agents and tools, orchestrating multi-agent pipelines, the new graph-based `workflow` engine, durable human-in-the-loop, MCP/Agent Registry integration, remote A2A agents, or migrating an existing v1 codebase to v2.
+## What is a skill?
+
+A skill is a packaged, on-demand instruction set — a `SKILL.md` file plus reference docs — that a coding agent loads into context only when a task actually needs it, instead of relying on the agent's (often stale or v1-only) training data. This skill teaches an agent how to write correct ADK Go v2 code: defining agents and tools, orchestrating multi-agent pipelines, the new graph-based `workflow` engine, durable human-in-the-loop, MCP/Agent Registry integration, remote A2A agents, and migrating an existing v1 codebase to v2.
+
+It works with any coding agent that supports the emerging Agent Skills format — Claude Code, OpenCode, Cursor, Kiro CLI, and others — since `SKILL.md` itself contains no tool-specific instructions.
 
 ## Why this exists
 
@@ -21,11 +25,35 @@ evals/
   evals.json                   Benchmark prompts + assertions used to test and iterate on the skill
 ```
 
-`SKILL.md` stays under Claude's context budget by keeping only the always-relevant material inline and pointing into `references/*.md` for the rest — those load only when the task actually needs them.
+`SKILL.md` stays lean by keeping only the always-relevant material inline and pointing into `references/*.md` for the rest — those load only when the task actually needs them.
 
-## Using it
+## Install (30-second setup)
 
-Copy or symlink this directory into a project's skills directory (e.g. `.claude/skills/google-adk-v2-golang/` — see the [Claude Code skills docs](https://docs.claude.com/en/docs/claude-code/skills) for supported locations). Claude triggers it automatically on ADK Go–shaped requests; no manual invocation needed.
+**Any agent, via `npx skills`** (writes editable files into your repo; pull updates manually with `npx skills update`):
+
+```bash
+npx skills@latest add rafaelpissolatto/google-adk-v2-golang
+```
+
+Pick this skill from the list, along with your target agent(s) — the tool wires it into the right location for each one automatically.
+
+<details>
+<summary>Requirements</summary>
+
+`npx skills` needs [Node.js](https://nodejs.org/) 18+ (bundles npm) on your `PATH`. No Node toolchain? Skip straight to the manual copy/symlink table below — it has no dependencies.
+
+</details>
+
+Per-agent locations, if you'd rather copy or symlink the directory by hand:
+
+| Agent | Skill directory |
+|---|---|
+| [Claude Code](https://docs.claude.com/en/docs/claude-code/skills) | `.claude/skills/google-adk-v2-golang/` |
+| [OpenCode](https://opencode.ai/) | `.opencode/skills/google-adk-v2-golang/` |
+| [Cursor](https://cursor.com/) | `.agents/skills/google-adk-v2-golang/` |
+| [Kiro CLI](https://kiro.dev/) | `.kiro/skills/google-adk-v2-golang/` |
+
+Once in place, most agents surface it automatically; some (e.g. OpenCode) list it as an available skill the agent chooses to load on ADK Go–shaped requests.
 
 ## Status
 
